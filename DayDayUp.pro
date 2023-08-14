@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    untitled1
+    untitled1 \
+    untitled2
