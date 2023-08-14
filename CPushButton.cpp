@@ -13,7 +13,7 @@ CPushButton::CPushButton(QWidget *parent) : QPushButton(parent)
 
 void CPushButton::mousePressEvent(QMouseEvent *event)
 {
-    qDebug() << __FUNCTION__ ;
+    qDebug() << __FUNCTION__ << this->metaObject()->className() << event;
     QPushButton::mousePressEvent(event);
 }
 
@@ -22,6 +22,6 @@ void CPushButton::mousePressEvent(QMouseEvent *event)
 
 void CPushButton::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug() << __FUNCTION__ ;
+    qDebug() << __FUNCTION__  << this->metaObject()->className()<< event;
     QPushButton::mouseMoveEvent(event);
 }

@@ -3,7 +3,7 @@
 
 #include <QPushButton>
 #include <QGraphicsView>
-
+//摸索 Qt 的事件传播机制
 class CPushButton : public QPushButton
 {
     Q_OBJECT

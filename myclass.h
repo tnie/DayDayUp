@@ -2,7 +2,7 @@
 #define MYCLASS_H
 
 #include <QObject>
-
+//摸索 Qt 的属性机制
 class MyClass : public QObject
 {
     Q_OBJECT

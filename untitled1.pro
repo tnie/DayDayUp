@@ -16,6 +16,7 @@ SOURCES += \
 
 HEADERS += \
     CPushButton.h \
+    X57Diff.h \
     mainwindow.h \
     myclass.h
 

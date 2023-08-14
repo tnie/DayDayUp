@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include <QGraphicsView>
-include "myclass.h"
+#include "myclass.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,16 +16,14 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    qDebug() << __FUNCTION__ ;
+    qDebug() << __FUNCTION__  << this->metaObject()->className() << event;
     QMainWindow::mousePressEvent(event);
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug() << __FUNCTION__ ;
+    qDebug() << __FUNCTION__  << this->metaObject()->className()<< event;
     QMainWindow::mouseMoveEvent(event);
 }

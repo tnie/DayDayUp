@@ -1,5 +1,6 @@
 #include "myclass.h"
 #include <QDebug>
+#include <QObject>
 
 MyClass::MyClass(QObject *parent) : QObject(parent)
 {
@@ -19,7 +20,8 @@ void test()
 
     QObject * c2 = c1;
     qDebug() << c2->property("priority");
-    c2->setProperty("priority", "VeryHigh");
+    QVariant var("VeryHigh");
+    c2->setProperty("priority", var);
     qDebug() << c2->property("priority");
     qDebug() << c1->priority();
 }
