@@ -5,6 +5,23 @@
 #include <QPixmap>
 
 int MainWindow::time_ = 0;
+
+//摸索 Qt 的隐式共享
+void test1()
+{
+    QPixmap p1, p2;
+    p1.load("image.bmp");
+//    隐式共享
+    p2 = p1;                        // p1 and p2 share data
+
+    QPainter paint;
+//    写时拷贝，难道拷贝操作是放到 QPainter 中实现的吗？
+    paint.begin(&p2);               // cuts p2 loose from p1
+    paint.drawText(0,50, "Hi");
+    paint.end();
+
+}
+
 //摸索 Qt 的绘制过程
 void MainWindow::paint()
 {
@@ -23,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    test1();
     pix = new QPixmap(this->width()/2, this->height()/2);
     QTimer::singleShot(1000*5, this, SLOT(paint()));
 }
