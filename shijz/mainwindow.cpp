@@ -18,31 +18,15 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setWindowTitle("shijz 报告");
-    const QSqlError error = data::prepare();
+    this->setWindowTitle("标记点管理");
+    const QSqlError error = data::prepareMarkNode();
     if(error.isValid())
     {
         qDebug() << error;
     }
-    if(QSqlQueryModel *model = new QSqlQueryModel(this))
-    {
-        model->setQuery("SELECT Name, City FROM Persons");
-        if(model->lastError().isValid())
-        {
-            qDebug() << model->lastError();
-        }
-        else
-        {
-            model->setHeaderData(0, Qt::Horizontal, tr("Name"));
-            model->setHeaderData(1, Qt::Horizontal, tr("City"));
-
-            ui->tableView->setModel(model);
-            ui->tableView->show();
-        }
-    }
     if(QSqlTableModel *model = new QSqlTableModel(this))
     {
-        model->setTable("Persons");
+        model->setTable("marknodes");
         model->setEditStrategy(QSqlTableModel::OnFieldChange);
         if(model->select())
         {
