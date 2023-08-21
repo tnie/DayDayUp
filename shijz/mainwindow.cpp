@@ -8,11 +8,6 @@
 #include <QSqlTableModel>
 #include "database.h"
 
-namespace  {
-
-
-}
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -30,16 +25,19 @@ MainWindow::MainWindow(QWidget *parent)
         model->setEditStrategy(QSqlTableModel::OnFieldChange);
         if(model->select())
         {
-            model->setHeaderData(0, Qt::Horizontal, tr("ID"));
-            model->setHeaderData(1, Qt::Horizontal, tr("Name"));
-//NOTE 只能关联整张表格，可以在 view 中隐藏不关心的列
+            model->setHeaderData(0, Qt::Horizontal, tr("代号"));
+            model->setHeaderData(1, Qt::Horizontal, tr("纬度"));
+            model->setHeaderData(2, Qt::Horizontal, tr("经度"));
+            // TODO 魔术数字；调换列的顺序；修改内容就出错
+            constexpr int nameIdx = 11;
+            model->setHeaderData(nameIdx, Qt::Horizontal, tr("航路点名称"));
             ui->writableView->setModel(model);
-            ui->writableView->hideColumn(0); // don't show the ID
+            //NOTE 只能关联整张表格，可以在 view 中隐藏不关心的列
+            for (int i = 3; i < model->columnCount(); ++i) {
+                ui->writableView->hideColumn(i);
+            }
+            ui->writableView->showColumn(nameIdx);
             ui->writableView->show();
-            ui->writableView2->setModel(model);
-            ui->writableView2->hideColumn(0);
-            ui->writableView2->hideColumn(2);
-            ui->writableView2->show();
         }
         else
         {
