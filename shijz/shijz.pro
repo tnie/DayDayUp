@@ -1,4 +1,4 @@
-QT       += core gui sql
+QT       += core gui sql positioning
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,11 +10,13 @@ CONFIG += c++11
 
 SOURCES += \
     database.cpp \
+    geodelegate.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     database.h \
+    geodelegate.h \
     mainwindow.h
 
 FORMS += \
