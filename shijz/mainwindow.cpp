@@ -7,6 +7,7 @@
 #include <QSqlQueryModel>
 #include <QSqlTableModel>
 #include "database.h"
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -22,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     if(QSqlTableModel *model = new QSqlTableModel(this))
     {
         model->setTable("marknodes");
-        model->setEditStrategy(QSqlTableModel::OnFieldChange);
+        model->setEditStrategy(QSqlTableModel::OnManualSubmit);
         if(model->select())
         {
             model->setHeaderData(0, Qt::Horizontal, tr("代号"));
@@ -49,5 +50,27 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+
+void MainWindow::on_btnSubmit_clicked()
+{
+    QAbstractItemModel * m = ui->writableView->model();
+    if(QSqlTableModel *model = static_cast<QSqlTableModel*>(m))
+    {
+        if(!model->isDirty())
+        {
+            QMessageBox::information(this, "提交", "没有修改任何内容");
+            return;
+        }
+        if(false == model->submitAll())
+        {
+            QMessageBox::critical(this, "提交", model->lastError().text());
+        }
+        else
+        {
+            QMessageBox::information(this, "提交", "提交成功");
+        }
+    }
 }
 
