@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -15,15 +15,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->setWindowTitle("标记点管理");
-    const QSqlError error = data::prepareMarkNode();
+    const QSqlError error = data::prepareMarkNode(true);
     if(error.isValid())
     {
-        qDebug() << error;
+        qCritical() << error;
     }
     if(QSqlTableModel *model = new QSqlTableModel(this))
     {
+//        TODO 能不能用达梦作为 model 的源
         model->setTable("marknodes");
-        model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+        if(model->lastError().isValid())
+        {
+            qCritical() << model->lastError();
+        }
+//        model->setEditStrategy(QSqlTableModel::OnFieldChange);
         if(model->select())
         {
             model->setHeaderData(0, Qt::Horizontal, tr("代号"));
@@ -42,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
         else
         {
-            qDebug() << model->lastError();
+            qCritical() << model->lastError();
         }
     }
 }

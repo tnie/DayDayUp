@@ -1,4 +1,4 @@
-#include "database.h"
+﻿#include "database.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -48,13 +48,14 @@ VALUES (1, 'niel', 'aha', 'Beijing');
     return db.lastError();
 }
 
-QSqlError data::prepareMarkNode()
+QSqlError data::prepareMarkNode(bool remote /*= false*/)
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+//    用户需要保证 ODBC 驱动以及 k10 数据源等配置正确
+    QSqlDatabase db = QSqlDatabase::addDatabase(remote ? "QODBC" : "QSQLITE");
     if(db.isValid())
     {
         //            Unable to execute multiple statements at a time
-        db.setDatabaseName("dzht.sqlite");
+        db.setDatabaseName(remote ? "k10" : "dzht.sqlite");
         if(bool ok = db.open())
         {
 //            此文件通过可视化工具已经初始化 marknodes 表，并预先存储有 4 条数据
