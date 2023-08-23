@@ -12,6 +12,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , longitudeDelegate_(true)
+    , latitudeDelegate_(false)
 {
     ui->setupUi(this);
     this->setWindowTitle("标记点管理");
@@ -62,7 +64,8 @@ void MainWindow::usingQueryModel()
 {
     if(QSqlQueryModel *model = new QSqlQueryModel(this))
     {
-//        NOTE Index 是 SQL 中的保留关键词，用作列名需要双引号
+//        NOTE Index 是 SQL 中的保留关键词，用作列名需要双引号；
+//        另一种方式 CONCAT(Latitude, Longitude)
         model->setQuery(R"(SELECT "Index", Latitude, Longitude, Name FROM marknodes;)");
         if(model->lastError().isValid())
         {
@@ -76,6 +79,8 @@ void MainWindow::usingQueryModel()
             model->setHeaderData(3, Qt::Horizontal, tr("航路点名称"));
 
             ui->tableView->setModel(model);
+            ui->tableView->setItemDelegateForColumn(1, &latitudeDelegate_);
+            ui->tableView->setItemDelegateForColumn(2, &longitudeDelegate_);
             ui->tableView->show();
         }
     }

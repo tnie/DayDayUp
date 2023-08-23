@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "geodelegate.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -20,6 +21,8 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    GeoDelegate longitudeDelegate_;
+    GeoDelegate latitudeDelegate_;
     void usingTableModel();
     void usingQueryModel();
 };

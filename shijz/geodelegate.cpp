@@ -1,9 +1,9 @@
-#include "geodelegate.h"
+﻿#include "geodelegate.h"
 #include <QGeoCoordinate>
 #include <QLineEdit>
 
-GeoDelegate::GeoDelegate(QObject *parent )
-    : QStyledItemDelegate(parent)
+GeoDelegate::GeoDelegate(bool isLongitude, QObject *parent )
+    : QStyledItemDelegate(parent), isLongitude_(isLongitude)
 {
 
 }
@@ -42,4 +42,23 @@ void GeoDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const
 void GeoDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     editor->setGeometry(option.rect);
+}
+
+QString GeoDelegate::displayText(const QVariant &value, const QLocale &locale) const
+{
+    bool ok = false;
+    const double v = value.toDouble(&ok);
+    if(ok)
+    {
+        QGeoCoordinate co(0, 0);
+        isLongitude_ ?  co.setLongitude(v) : co.setLatitude(v);
+        if(co.isValid())
+        {
+            const QString str = co.toString();
+            const QString latitude = str.left(str.indexOf(','));
+            const QString longitude = str.mid(str.indexOf(',') + 1);
+            return isLongitude_ ? longitude : latitude;
+        }
+    }
+    return QStyledItemDelegate::displayText(value, locale);
 }
