@@ -20,6 +20,12 @@ MainWindow::MainWindow(QWidget *parent)
     {
         qCritical() << error;
     }
+    usingTableModel();  // fail
+    usingQueryModel();
+}
+
+void MainWindow::usingTableModel()
+{
     if(QSqlTableModel *model = new QSqlTableModel(this))
     {
 //        TODO 能不能用达梦作为 model 的源
@@ -48,6 +54,29 @@ MainWindow::MainWindow(QWidget *parent)
         else
         {
             qCritical() << model->lastError();
+        }
+    }
+}
+
+void MainWindow::usingQueryModel()
+{
+    if(QSqlQueryModel *model = new QSqlQueryModel(this))
+    {
+//        NOTE Index 是 SQL 中的保留关键词，用作列名需要双引号
+        model->setQuery(R"(SELECT "Index", Latitude, Longitude, Name FROM marknodes;)");
+        if(model->lastError().isValid())
+        {
+            qCritical() << model->lastError();
+        }
+        else
+        {
+            model->setHeaderData(0, Qt::Horizontal, tr("代号"));
+            model->setHeaderData(1, Qt::Horizontal, tr("纬度"));
+            model->setHeaderData(2, Qt::Horizontal, tr("经度"));
+            model->setHeaderData(3, Qt::Horizontal, tr("航路点名称"));
+
+            ui->tableView->setModel(model);
+            ui->tableView->show();
         }
     }
 }

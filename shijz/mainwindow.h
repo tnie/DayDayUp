@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -20,5 +20,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+    void usingTableModel();
+    void usingQueryModel();
 };
 #endif // MAINWINDOW_H
