@@ -8,6 +8,8 @@
 #include <QSqlTableModel>
 #include "database.h"
 #include <QMessageBox>
+#include <QSqlRecord>
+#include <QPainter>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -24,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     usingTableModel();  // fail
     usingQueryModel();
+//    ui->centralwidget->hide();
 }
 
 void MainWindow::usingTableModel()
@@ -86,6 +89,15 @@ void MainWindow::usingQueryModel()
     }
 }
 
+QPoint MainWindow::mapping(double latitude, double longitude) const
+{
+    const int height = this->size().height();
+    int y = latitude * height / 180 + height / 2;
+    const int width = this->size().width();
+    int x = longitude * width / 360 + width / 2;
+    return QPoint(x, y);
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -117,6 +129,14 @@ void MainWindow::paintEvent(QPaintEvent *event)
     QAbstractItemModel * m = ui->tableView->model();
     if(QSqlQueryModel *model = static_cast<QSqlQueryModel*>(m))
     {
-
+        QPainter painter(this);
+        painter.drawEllipse(QPoint(), 5, 5);    // 左上角留痕
+        for (int row = 0; row < model->rowCount(); ++row) {
+            const QSqlRecord record = model->record(row);
+            const double latitude = record.value("Latitude").toDouble();
+            const double longitude = record.value("Longitude").toDouble();
+            QPoint p = mapping(latitude, longitude);
+            painter.drawEllipse(p, 5, 5);
+        }
     }
 }

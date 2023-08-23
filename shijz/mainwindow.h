@@ -25,6 +25,7 @@ private:
     GeoDelegate latitudeDelegate_;
     void usingTableModel();
     void usingQueryModel();
+    QPoint mapping(double latitude, double longitude) const;
 
     // QWidget interface
 protected:
