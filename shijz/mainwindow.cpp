@@ -91,7 +91,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::on_btnSubmit_clicked()
 {
     QAbstractItemModel * m = ui->writableView->model();
@@ -113,3 +112,11 @@ void MainWindow::on_btnSubmit_clicked()
     }
 }
 
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    QAbstractItemModel * m = ui->tableView->model();
+    if(QSqlQueryModel *model = static_cast<QSqlQueryModel*>(m))
+    {
+
+    }
+}

@@ -25,5 +25,9 @@ private:
     GeoDelegate latitudeDelegate_;
     void usingTableModel();
     void usingQueryModel();
+
+    // QWidget interface
+protected:
+    virtual void paintEvent(QPaintEvent *event) override;
 };
 #endif // MAINWINDOW_H
