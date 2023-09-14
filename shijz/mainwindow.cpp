@@ -8,6 +8,7 @@
 #include <QSqlTableModel>
 #include "database.h"
 #include <QMessageBox>
+#include <QElapsedTimer>
 #include <QSqlRecord>
 #include <QPainter>
 
@@ -18,14 +19,15 @@ MainWindow::MainWindow(QWidget *parent)
     , latitudeDelegate_(false)
 {
     ui->setupUi(this);
-    this->setWindowTitle("标记点管理");
-    const QSqlError error = data::prepareMarkNode(true);
+    this->setWindowTitle(QString("标记点管理 [pid %1]").arg(qApp->applicationPid()));
+    const QSqlError error = data::prepareMarkNode();
     if(error.isValid())
     {
         qCritical() << error;
     }
-    usingTableModel();  // fail
+//    usingTableModel();  // fail
     usingQueryModel();
+    insertNodes();
 //    ui->centralwidget->hide();
 }
 
@@ -87,6 +89,40 @@ void MainWindow::usingQueryModel()
             ui->tableView->show();
         }
     }
+}
+
+void addNode(QSqlQuery &q, double latitude, double longitude)
+{
+    q.addBindValue(latitude);
+    q.addBindValue(longitude);
+    q.exec();
+}
+
+//参考 Qt 示例 books
+void MainWindow::insertNodes()
+{
+    QSqlQuery query;
+    if (!query.prepare("insert into marknodes(latitude, longitude) values(?, ?)"))
+    {
+        const QString title = QString("prepare [pid %1]").arg(qApp->applicationPid());
+        QMessageBox::critical(this, title, query.lastError().text());
+        return;
+    }
+    QElapsedTimer timer;
+    for (int i = 0; i<1000/*1000*/; ++i)
+    {
+        timer.start();
+        addNode(query, i, i);
+        qDebug() << "addNode() cost " << timer.elapsed() << "ms";
+        if(query.lastError().isValid())
+        {
+            const QString title = QString("exec [pid %1]").arg(qApp->applicationPid());
+            qCritical() << title;
+            QMessageBox::critical(this, title, query.lastError().text());
+            return;
+        }
+    }
+
 }
 
 QPoint MainWindow::mapping(double latitude, double longitude) const

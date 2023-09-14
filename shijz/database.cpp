@@ -56,8 +56,10 @@ QSqlError data::prepareMarkNode(bool remote /*= false*/)
     {
         //            Unable to execute multiple statements at a time
         db.setDatabaseName(remote ? "k10" : "dzht.sqlite");
+        db.setConnectOptions("QSQLITE_BUSY_TIMEOUT=3000");
         if(bool ok = db.open())
         {
+            qDebug() << db.connectionName() << "connectOptions: " << db.connectOptions();
 //            此文件通过可视化工具已经初始化 marknodes 表，并预先存储有 4 条数据
         }
     }
