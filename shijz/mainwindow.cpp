@@ -11,6 +11,10 @@
 #include <QElapsedTimer>
 #include <QSqlRecord>
 #include <QPainter>
+#include <QProgressBar>
+#include <QTimer>
+
+constexpr int _COUNT_  = 1000*10;     //数据库插入多少条
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -25,10 +29,19 @@ MainWindow::MainWindow(QWidget *parent)
     {
         qCritical() << error;
     }
+    initGui();
 //    usingTableModel();  // fail
-    usingQueryModel();
-    insertNodes();
+//    queryNodes(1);  // empty table
+//    insertNodes();
+//    queryNodes(2);  // print
+//    usingQueryModel();
 //    ui->centralwidget->hide();
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    QTimer::singleShot(50, this, SLOT(insertNodes()));
 }
 
 void MainWindow::usingTableModel()
@@ -87,6 +100,10 @@ void MainWindow::usingQueryModel()
             ui->tableView->setItemDelegateForColumn(1, &latitudeDelegate_);
             ui->tableView->setItemDelegateForColumn(2, &longitudeDelegate_);
             ui->tableView->show();
+
+//            while (model->canFetchMore()) {
+//                model->fetchMore();
+//            }
         }
     }
 }
@@ -109,20 +126,55 @@ void MainWindow::insertNodes()
         return;
     }
     QElapsedTimer timer;
-    for (int i = 0; i<1000/*1000*/; ++i)
+    for (int i = 0; i< _COUNT_; ++i)
     {
         timer.start();
         addNode(query, i, i);
-        qDebug() << "addNode() cost " << timer.elapsed() << "ms";
+        qDebug("addNode(%d) cost %lld ms", i, timer.elapsed());
         if(query.lastError().isValid())
         {
             const QString title = QString("exec [pid %1]").arg(qApp->applicationPid());
-            qCritical() << title;
-            QMessageBox::critical(this, title, query.lastError().text());
-            return;
+            qCritical() << title << query.lastError();
+            ui->textBrowser->append(query.lastError().text());
+//            QMessageBox::critical(this, title, query.lastError().text());
+//            return;
+        }
+        else
+        {
+            ui->progressBar->setValue(i+1);
         }
     }
 
+}
+
+void MainWindow::queryNodes(int step)
+{
+    static QSqlQuery query;
+    if(1 == step)
+    {
+        query.setForwardOnly(true);
+        qDebug() << "isForwardOnly() " << query.isForwardOnly();
+        if(!query.exec("select latitude, longitude from marknodes"))
+        {
+            const QString title = QString("select [pid %1]").arg(qApp->applicationPid());
+            QMessageBox::critical(this, title, query.lastError().text());
+            return;
+        }
+
+        qDebug() << "isForwardOnly() " << query.isForwardOnly();
+        qDebug() << "isSelect() " << query.isSelect();
+    //    An active QSqlQuery is one that has been exec()'d successfully but not yet finished with.
+        qDebug() << "isActive() " << query.isActive();
+        qDebug() << "size()= " << query.size();     // -1
+    }
+    else if( 2 == step)
+    {
+        qDebug() << "2. isActive() " << query.isActive();
+        while (query.next()) {
+            QSqlRecord r = query.record();
+            qDebug() << r;
+        }
+    }
 }
 
 QPoint MainWindow::mapping(double latitude, double longitude) const
@@ -132,6 +184,12 @@ QPoint MainWindow::mapping(double latitude, double longitude) const
     const int width = this->size().width();
     int x = longitude * width / 360 + width / 2;
     return QPoint(x, y);
+}
+
+void MainWindow::initGui()
+{
+    ui->progressBar->setMinimum(0);
+    ui->progressBar->setMaximum(_COUNT_);
 }
 
 MainWindow::~MainWindow()
@@ -162,6 +220,7 @@ void MainWindow::on_btnSubmit_clicked()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
+    return;
     QAbstractItemModel * m = ui->tableView->model();
     if(QSqlQueryModel *model = static_cast<QSqlQueryModel*>(m))
     {

@@ -4,6 +4,7 @@
 #include <QSqlQuery>
 #include <QVariant>
 #include <QDebug>
+#include <QSqlDriver>
 
 QSqlError data::prepare()
 {
@@ -48,6 +49,35 @@ VALUES (1, 'niel', 'aha', 'Beijing');
     return db.lastError();
 }
 
+QString driverFeatureName(QSqlDriver::DriverFeature f)
+{
+#ifndef _DriverFeatureName_
+#define _DriverFeatureName_(x) \
+    case QSqlDriver::DriverFeature::x: return #x;
+
+    switch (f) {
+      _DriverFeatureName_(Transactions);
+      _DriverFeatureName_(QuerySize);
+      _DriverFeatureName_(BLOB);
+      _DriverFeatureName_(Unicode);
+      _DriverFeatureName_(PreparedQueries);
+      _DriverFeatureName_(NamedPlaceholders);
+      _DriverFeatureName_(PositionalPlaceholders);
+      _DriverFeatureName_(LastInsertId);
+      _DriverFeatureName_(BatchOperations);
+      _DriverFeatureName_(SimpleLocking);
+      _DriverFeatureName_(LowPrecisionNumbers);
+      _DriverFeatureName_(EventNotifications);
+      _DriverFeatureName_(FinishQuery);
+      _DriverFeatureName_(MultipleResultSets);
+      _DriverFeatureName_(CancelQuery);
+    default:
+        return "unknow driver feature";
+    }
+#undef _DriverFeatureName_
+#endif
+}
+
 QSqlError data::prepareMarkNode(bool remote /*= false*/)
 {
 //    用户需要保证 ODBC 驱动以及 k10 数据源等配置正确
@@ -60,6 +90,16 @@ QSqlError data::prepareMarkNode(bool remote /*= false*/)
         if(bool ok = db.open())
         {
             qDebug() << db.connectionName() << "connectOptions: " << db.connectOptions();
+            if(QSqlDriver *driver = db.driver())
+            {
+                for (int i=0; i<= QSqlDriver::CancelQuery; ++i)
+                {
+                    QSqlDriver::DriverFeature f = static_cast<QSqlDriver::DriverFeature>(i);
+                    qDebug() << "hasFeature(" << driverFeatureName(f)
+                             << ")" << driver->hasFeature(f);
+                }
+
+            }
 //            此文件通过可视化工具已经初始化 marknodes 表，并预先存储有 4 条数据
         }
     }

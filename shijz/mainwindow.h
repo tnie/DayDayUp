@@ -18,6 +18,7 @@ public:
 
 private slots:
     void on_btnSubmit_clicked();
+    void insertNodes();
 
 private:
     Ui::MainWindow *ui;
@@ -25,11 +26,17 @@ private:
     GeoDelegate latitudeDelegate_;
     void usingTableModel();
     void usingQueryModel();
-    void insertNodes();
+    void queryNodes(int step);
     QPoint mapping(double latitude, double longitude) const;
+    void initGui();
 
     // QWidget interface
 protected:
     virtual void paintEvent(QPaintEvent *event) override;
+
+    // QWidget interface
+protected:
+    virtual void showEvent(QShowEvent *event) override;
 };
+
 #endif // MAINWINDOW_H
