@@ -18,7 +18,13 @@ int main(int argc, char *argv[])
 
 信号槽的连接 `QueuedConnection` 有什么特殊？
 
-`QXXXApplication` 是单例类的概念，存在私有静态成员 `static QCoreApplication *self` 指针。
+`QXXXApplication` 是单例类的概念，存在私有静态成员 `static QCoreApplication *self` 指针。构造中也做了对应的约束：
+
+```cpp
+// 摘自 QCoreApplicationPrivate::init()
+    Q_ASSERT_X(!QCoreApplication::self, "QCoreApplication", "there should be only one application object");
+    QCoreApplication::self = q;
+```
 
 熟悉 ASIO 框架的同学，会有一个疑问：没有事件的时候，循环就退出了。Qt 怎么处理的？
 
@@ -56,7 +62,17 @@ int main(int argc, char *argv[])
 
 读代码就是剥洋葱，一层又一层。逻辑清晰明了非常重要。
 
-类 `QThreadData` 的概念和作用？这个 `threadData` 成员变量在 `QObjectPrivate` 基类中。
+在 `QCoreApplicationPrivate::QCoreApplicationPrivate()` 会执行以下代码，
+表示第一个创建 `QCoreApplication` 对象的线程就是主线程。
+
+```cpp
+// 摘自 QThreadData::current()
+if (!QCoreApplicationPrivate::theMainThread) {
+    QCoreApplicationPrivate::theMainThread = threadData->thread.loadRelaxed();
+}
+```
+
+类 `QThreadData` 的概念和作用？=线程id ，这个 `threadData` 成员变量在 `QObjectPrivate` 基类中。
 
 ```cpp
 // 摘自 QObjectPrivate 类定义
@@ -71,6 +87,7 @@ int main(int argc, char *argv[])
 在 `QThreadData::current()` 中新建对象时，底层调用 Win32 API 完成的赋值： `TlsGetValue()`
 
 ```cpp
+// 摘自 QThreadData::current()
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
 ```
 
@@ -81,6 +98,7 @@ int main(int argc, char *argv[])
 查看 `QCoreApplication::exit()` 的实现，发现是借 `QThreadData::eventLoops` 退出的，可上述局部变量如何关联到前者的？
 
 ```cpp
+// 摘自 QCoreApplication::exit()
 for (int i = 0; i < data->eventLoops.size(); ++i) {
     QEventLoop *eventLoop = data->eventLoops.at(i);
     eventLoop->exit(returnCode);
@@ -90,6 +108,7 @@ for (int i = 0; i < data->eventLoops.size(); ++i) {
 就在局部变量 `eventLoop.exec()` 启动事件循环时：
 
 ```cpp
+// 摘自 QEventLoop::exec()
     auto threadData = d->threadData.loadRelaxed();
     ++threadData->loopLevel;
     threadData->eventLoops.push(d->q_func());
@@ -104,3 +123,7 @@ for (int i = 0; i < data->eventLoops.size(); ++i) {
 思考：此处的 thread id 概念很好理解，但是理解代码实现反而有难度。难道这是兼容旧标准，兼容多平台的代价吗？
 
 Qt 第一个版本 Qt1.0 诞生于 1995 年，比 C++ 第一个标准 C++98 还早三年。 C++ 的线程类 `std::thread` 在 2011 年前后的 C++11 标准中引入。
+
+# 事件
+
+事件循环，我们给 `QCoreApplication` 单例一个事件，看一下怎么分发处理的？
