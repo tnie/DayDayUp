@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
 信号槽的连接 `QueuedConnection` 有什么特殊？
 
-`QXXXApplication` 是单例类的概念，存在私有静态成员 `static QCoreApplication *self` 指针。构造中也做了对应的约束：
+`QXXXApplication` 是单例类，存在私有静态成员 `static QCoreApplication *self` 指针。构造中也做了对应的约束：
 
 ```cpp
 // 摘自 QCoreApplicationPrivate::init()
@@ -124,6 +124,35 @@ for (int i = 0; i < data->eventLoops.size(); ++i) {
 
 Qt 第一个版本 Qt1.0 诞生于 1995 年，比 C++ 第一个标准 C++98 还早三年。 C++ 的线程类 `std::thread` 在 2011 年前后的 C++11 标准中引入。
 
+# 终端
+
+想看到熟悉的终端窗口？
+
+在项目的 Build & Run 配置中，勾选 Run in terminal 即可。
+
+此时 `qDebug()`/ `qWarning()` 等日志就不会在应用程序输出窗口打印，而是在终端打印。
+
+选中 Run in terminal 之前，应用程序 Run in 哪里呢？
+
 # 事件
 
 事件循环，我们给 `QCoreApplication` 单例一个事件，看一下怎么分发处理的？
+
+两个发送事件的函数：
+
+- `QCoreApplication::postEvent()` 事件对象应在堆上创建，先放队列，分发处理时用到了后者
+- `QCoreApplication::sendEvent()` 事件对象应在栈上创建，直接在当前线程、当前函数执行
+
+用户自定义事件 `a.postEvent(&a, new QEvent(QEvent::User))` 放到了 receiver 线程的队列上，
+在 `QObject::customEvent()` 函数加断点，以便了解调用逻辑：
+过程似乎用到 Win32 的窗口类以及有关的函数调用，可这只是个 Console 程序而已。为什么？
+
+```cpp
+// 摘自 QCoreApplication::postEvent
+    data->postEventList.addEvent(QPostEvent(receiver, event, priority));
+
+// 摘自 QEventDispatcherWin32::processEvents() ，先处理 OS 事件（键鼠输入、网络收发）
+    haveMessage = PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
+```
+
+去了解 Win32 API 还是转头去看 linux 平台的实现呢？
