@@ -72,7 +72,7 @@ if (!QCoreApplicationPrivate::theMainThread) {
 }
 ```
 
-类 `QThreadData` 的概念和作用？=线程id ，这个 `threadData` 成员变量在 `QObjectPrivate` 基类中。
+类 `QThreadData` 的概念和作用？=线程id （并且管理着事件循环类），这个 `threadData` 成员变量在 `QObjectPrivate` 基类中。
 
 ```cpp
 // 摘自 QObjectPrivate 类定义
@@ -91,7 +91,7 @@ if (!QCoreApplicationPrivate::theMainThread) {
     QThreadData *threadData = reinterpret_cast<QThreadData *>(TlsGetValue(qt_current_thread_data_tls_index));
 ```
 
-事件循环类 `QEventLoop` ，作为函数内部的局部变量使用，那么循环是如何退出的？
+事件循环类 `QEventLoop` ，作为函数 `QCoreApplication::exec()` 内部的局部变量使用（生命周期同 `QCoreApplication` 对象），那么循环是如何退出的？
 
 > From within the event loop, calling `exit()` will force `exec()` to return.
 
