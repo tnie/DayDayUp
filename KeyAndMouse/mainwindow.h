@@ -14,9 +14,11 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void appendMessage(QtMsgType, const QMessageLogContext &, const QString &);
 
 private:
     Ui::MainWindow *ui;
+    QtMessageHandler handler;
 
     // QWidget interface
 protected:

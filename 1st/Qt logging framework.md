@@ -22,7 +22,7 @@ Calls the message handler with the debug message _message_.
 日志框架涉及的几个类型：
 
 ```cpp
-using QtMessageHandler = void(QtMsgType, const QMessageLogContext &, const QString &);
+typedef void (*QtMessageHandler)(QtMsgType, const QMessageLogContext &, const QString &);
 ```
 
 ```cpp
