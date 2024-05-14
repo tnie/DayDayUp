@@ -101,6 +101,27 @@ bool shouldLogToStderr()
 
 更多细节请到微软网站了解。
 
+对于窗口程序，一般不会通过终端启动，日志发给了调试器，怎么查看呢？ 
+
+- 如果使用 Qt Creator ，调试器就是 Qt Creator 的“应用程序输出”窗口
+- 如果使用 Visual Studio ，调试器就是 F5 启动调试，在 Output 查看输出
+- DebugView 工具
+
+## 银河麒麟 v10
+
+在这个平台下，窗口程序的日志发给了 syslog 还是 journald 呢？
+
+如果没有发给系统的日志管理系统，如何配置使它生效呢？
+
+## 定制输出格式
+
+比如输出日志的文件名、函数名、时间
+
+Qt 的日志框架中虽然 `QMessageLogger` 使用了文件名、行数和函数签名，
+但这些参数只是作为上下文，并未在打印日志中体现。那作为上下文做了些什么功能呢？
+
+比如针对数值如何格式化输出，包括二进制打印、十六进制打印、保留两位小数等等
+
 ## QMessageLogger
 
 > `QMessageLogger` is used to generate messages for the Qt logging framework.
