@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setWindowIcon(QIcon(":/icon/KM.ico"));
     const QString h = QString("%1 %2").arg(__DATE__).arg(__TIME__);
     qDebug() << h;
     ui->textBrowser->append(h);
