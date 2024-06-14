@@ -11,13 +11,3 @@
 作为 `sender` 角色析构时清空其 `QObjectPrivate::connectionLists`；作为 `receiver` 角色析构时将其 sender 的 receiver 置空 `node->receiver = 0`
 
 [Qt - 一文理解信号槽机制（万字剖析整理）_JYU_hsy的博客-CSDN博客](https://blog.csdn.net/weixin_40774605/article/details/109342536)
-
-# Qt Positioning
-
-Qt 自带的地理方位的库，其中的类型和接口在项目中完全没用，惊呆我了。
-
-经纬度浮点数值的格式化输出，使用 `QGeoCoordinate` 或自定义其子类会方便很多。
-
-`QGeoPath`  可用于航迹；圆形、矩形、多边形就是训练区；
-
-`QGeoPositionInfo` 和 `QGeoPositionInfoSource`  以及 `QGeoPositionInfoSourceFactory` 可用于 AIS 和雷达。
