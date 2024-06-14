@@ -7,9 +7,40 @@ date: 2023-03-17 14:37:04
 tags: qt moc
 ---
 
-QObject 的 d 指针，指向 QObjectPrivate；
+`QObject` 的 `d_ptr` 指针，指向 `QObjectPrivate` ； `QWidget` 的 `d_ptr` 指针，指向 `QWidgetPrivate` 。 
 
-QWidget 的 d 指针，指向 QWidgetPrivate； Qt 内部实现上使用了宏，本质上是 pImpl 手法。
+Qt 内部实现上使用了宏，本质上是 pImpl 手法。
+
+指针类型是抽象类 `QObjectData` ，它是所有 QXxxPrivate 类型的基类。
+
+`QScopedPointer<QObjectData> d_ptr` 
+
+元对象系统就定义在 `QObjectData` 中：
+
+```cpp
+// 摘自 qobject.h  版本 Qt 5.12.12
+class Q_CORE_EXPORT QObjectData {
+public:
+    virtual ~QObjectData() = 0;
+    QObject *q_ptr;
+    QObject *parent;
+    QObjectList children;
+
+    uint isWidget : 1;
+    uint blockSig : 1;
+    uint wasDeleted : 1;
+    uint isDeletingChildren : 1;
+    uint sendChildEvents : 1;
+    uint receiveChildEvents : 1;
+    uint isWindow : 1; //for QWindow
+    uint deleteLaterCalled : 1;
+    uint unused : 24;
+    int postedEvents;
+    QDynamicMetaObjectData *metaObject;
+    QMetaObject *dynamicMetaObject() const;
+};
+
+```
 
 要理解 `QObject` ，先看 `QMetaObject`
 
@@ -17,7 +48,7 @@ QWidget 的 d 指针，指向 QWidgetPrivate； Qt 内部实现上使用了宏�
 >
 > The `QMetaMethod` class provides meta-data about a member function.
 
-`struct QMetaObject` 实际只有一个（语法上）公有的成员变量 `d` 但在语义上却是 private data 。为什么如此处理？
+`struct QMetaObject` 实际只有一个（语法上）公有的成员变量 `d` 但在语义上却是 private data （见 `qobjectdefs.h` 头文件）。为什么如此处理？
 
 文件 `moc_qobject.cpp` 去哪里查看呢？
 
@@ -76,3 +107,15 @@ const QMetaObject *DObject::metaObject() const
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 ```
+
+# 源文件内部类
+
+我们可以在 .cpp 文件中定义只用于当前文件的 C++ 类，但 `QObject` 子类不支持这种做法。
+
+因为链接时无法看到 moc 扩展的定义，报错 LNK2001: unresolved external symbol
+
+推测可能需要某种技巧才能满足。
+
+[Define a QObject derived class inside an anonymous namespace?][1]
+
+[1]:https://stackoverflow.com/questions/41614016/define-a-qobject-derived-class-inside-an-anonymous-namespace

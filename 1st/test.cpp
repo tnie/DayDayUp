@@ -1,29 +1,18 @@
-#include <QCoreApplication>
-#include <QDebug>
+#include "test.h"
 #include "cobject.h"
-#include <QMetaMethod>
-#include <QVariant>
 #include <QPointer>
+#include <QDebug>
+#include <QMetaMethod>
 
-//为什么需要另起文件？ moc 的局限吗？
-//class CObject: public QObject
-//{
-//    Q_OBJECT
-//public:
-//    ~CObject(){};
-//};
-
-void test1()
+void moc::test1()
 {
     QPointer<QObject> p1 = new QObject;
     const QString objectName = p1->objectName();
     qDebug() << objectName;
 }
 
-int main(int argc, char *argv[])
+void moc::test2()
 {
-    test1();
-    QCoreApplication a(argc, argv);
     CObject *o=new CObject();
 //    QObject::connect(o, SIGNAL(objectNameChanged), o, SLOT(on_objectNameChanged));
     o->setObjectName("name1");
@@ -78,6 +67,4 @@ int main(int argc, char *argv[])
     o->dumpObjectInfo();
 
     o->setAge(11);
-
-    return a.exec();
 }

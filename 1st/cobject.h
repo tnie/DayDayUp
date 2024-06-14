@@ -21,4 +21,13 @@ private:
 
 };
 
+class DObject: public CObject
+{
+    Q_OBJECT
+public:
+    explicit DObject(QObject *parent = nullptr);
+
+signals:
+};
+
 #endif // COBJECT_H

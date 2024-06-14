@@ -7,5 +7,4 @@ SUBDIRS += \
     KeyAndMouse \
     shijz \
     untitled \
-    untitled1 \
-    untitled2
+    untitled1

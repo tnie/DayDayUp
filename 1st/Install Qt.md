@@ -34,3 +34,15 @@ configure -debug -nomake examples -nomake tests -opensource -skip qt3d -skip qta
 那我只用 Qt Creator 借用 gdb 调试
 
 我改用 MSVC 调试 qt 程序就不用 cdb 了吧？
+
+# cannot run 'rc.exe'
+
+在安装 Qt 5.12.12 + MSVC 2015 之后，再次安装 MSVC2019 ，可能会碰到 LNK1158: cannot run 'rc.exe' 错误造成编译失败。
+
+社区关于此问题的 [讨论和 workaround](https://forum.qt.io/topic/90839/lnk1158-cannot-run-rc-exe) 
+
+排查发现 `echo %WindowsSdkDir%` 环境变量指向的 `C:\Program Files (x86)\Windows Kits\10\` 子目录内下没有 rc.exe 
+
+刨根问底 [rc.exe no longer found in VS 2015 Command Prompt][1]
+
+[1]:https://stackoverflow.com/questions/43847542/rc-exe-no-longer-found-in-vs-2015-command-prompt
