@@ -72,7 +72,7 @@ if (!QCoreApplicationPrivate::theMainThread) {
 }
 ```
 
-类 `QThreadData` 的概念和作用？=线程id （并且管理着事件循环类），这个 `threadData` 成员变量在 `QObjectPrivate` 基类中。
+类 `QThreadData` 的概念和作用？=线程id （并且 **管理着事件循环类**），这个 `threadData` 成员变量在 `QObjectPrivate` 基类中。
 
 ```cpp
 // 摘自 QObjectPrivate 类定义

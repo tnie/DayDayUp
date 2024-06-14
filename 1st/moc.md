@@ -15,7 +15,7 @@ Qt 内部实现上使用了宏，本质上是 pImpl 手法。
 
 `QScopedPointer<QObjectData> d_ptr` 
 
-元对象系统就定义在 `QObjectData` 中：
+元对象系统就定义在 `QObjectData` 中：元对象针对类型，而非某个具体的对象实例。
 
 ```cpp
 // 摘自 qobject.h  版本 Qt 5.12.12
@@ -41,6 +41,8 @@ public:
 };
 
 ```
+
+# 内部实现
 
 要理解 `QObject` ，先看 `QMetaObject`
 
@@ -88,7 +90,7 @@ struct QMetaObjectPrivate
 
 > Apply this macro to declarations of member functions to allow them to be invoked via the meta-object system.
 
-在尝试追踪 `connect` 如何工作之前，我们先看一下怎么使用 `QMetaObject` 执行 `QObject` 中的方法？
+在尝试追踪 `connect` 如何工作之前，我们先看一下怎么使用 `QMetaObject` 执行 `QObject` 中的函数？
 
 ```cpp
 // 子类的对象元信息定义父类对象元信息时直接使用后者的 staticMetaObject
@@ -107,6 +109,39 @@ const QMetaObject *DObject::metaObject() const
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
 ```
+
+# 通过元对象执行函数
+
+元对象系统并不能调用常规的成员函数。
+
+见 `QMetaObject::invokeMethod()` 静态函数，以及 `enum Qt::ConnectionType` 枚举定义。
+
+> it determines whether a particular signal is delivered to a slot immediately or queued for delivery at a later time.
+
+默认参数 `Qt::AutoConnection` 根据信号槽的接收者是否和 ~~发送者~~ `emit` 在相同线程：
+
+- 如果在同一线程，就直接调用（等同于回调函数）
+- 如果不在同一线程，等进入接收者所在线程的事件循环时再执行槽函数（等同于发送异步信号）。
+
+为了更清晰地理解后者，我把有关的描述列在下面：
+
+> `Qt::QueuedConnection` The slot is invoked when control returns to the event loop of the receiver's thread. The slot is executed in the receiver's thread.
+
+摘自 `QMetaObject::invokeMethod()`
+
+> If type is `Qt::QueuedConnection`, a `QEvent` will be sent and the `member` is invoked as soon as the application enters the main event loop.
+
+所以，如何理解每个线程都有独立的事件循环？或者放弃多线程只用单一线程。
+
+见 `QThread` 类型描述：`run()` 虚函数可以在其子类中重写。
+
+> A `QThread` object manages one thread of control within the program. `QThreads` begin executing in `run()`. By default, `run()` starts the event loop by calling `exec()` and runs a Qt event loop inside the thread.
+
+见 Thread Affinity 特性：
+
+> A `QObject` instance is said to have a thread affinity, or that it lives in a certain thread.
+>
+> When a `QObject` receives a `queued signal` or a `posted event`, the slot or event handler will run in the thread that the object lives in.
 
 # 源文件内部类
 

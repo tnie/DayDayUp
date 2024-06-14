@@ -11,5 +11,6 @@ int main(int argc, char *argv[])
 //    a.sendEvent(&a, &e);
     a.postEvent(&a, new QEvent(QEvent::User));
     moc::test2();
+    thread::test();
     return a.exec();
 }

@@ -6,4 +6,9 @@ namespace moc {
     void test2();
 }
 
+namespace thread {
+    void test();
+
+}
+
 #endif // TEST_H

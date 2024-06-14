@@ -68,3 +68,10 @@ void moc::test2()
 
     o->setAge(11);
 }
+
+#include "workerthread.h"
+void thread::test()
+{
+    auto p = new MyObject;
+    p->startWorkInAThread();
+}

@@ -12,7 +12,8 @@ msvc: QMAKE_CXXFLAGS += /utf-8
 SOURCES += \
         cobject.cpp \
         main.cpp \
-        test.cpp
+        test.cpp \
+        workerthread.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -21,4 +22,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     cobject.h \
-    test.h
+    test.h \
+    workerthread.h
