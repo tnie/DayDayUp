@@ -6,5 +6,4 @@ SUBDIRS += \
     Employee \
     KeyAndMouse \
     shijz \
-    untitled \
     untitled1
