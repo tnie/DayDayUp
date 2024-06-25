@@ -1,6 +1,10 @@
 针对最简单的场景（单一线程），提供一个粗略的实现过程：
 
-在 `::connect()` 连接时，将 `receiver::slot` 放到和 `sender::signal` 关联的集合中，那么发射信号就是普通的函数调用。怎么关联？存在各自 `sender::metaobject` 中以 `signal` 为索引的集合，实际实现会有非常多的细节和分支处理。
+在 `::connect()` 连接时，将 `receiver::slot` 放到和 `sender::signal` 关联的集合中，那么发射信号就是普通的函数调用。
+
+怎么关联？
+
+存在各自 `sender::metaobject` 中以 `signal` 为索引的集合，实际实现会有非常多的细节和分支处理。
 
 方法论：pIpml 手法+观察者模式。
 

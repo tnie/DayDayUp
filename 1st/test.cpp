@@ -14,7 +14,8 @@ void moc::test1()
 void moc::test2()
 {
     CObject *o=new CObject();
-//    QObject::connect(o, SIGNAL(objectNameChanged), o, SLOT(on_objectNameChanged));
+    QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(const QString &)), o, SLOT(on_objectNameChanged(const QString &)));
+    Q_ASSERT(conn);
     o->setObjectName("name1");
 //    对象的元信息
     const QMetaObject *m=o->metaObject();

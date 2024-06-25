@@ -31,8 +31,9 @@ void CObject::setAge(int a)
 //    qDebug() << p1->metaObject();
 }
 
-void CObject::on_objectNameChanged()
+void CObject::on_objectNameChanged(const QString &)
 {
+    // 可以在此处断点调试，观察信号槽的调用堆栈
     setAge(0);
 }
 

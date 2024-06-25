@@ -11,7 +11,7 @@ public:
     explicit CObject(QObject *parent = nullptr);
     int age() const;
     void setAge(int a);
-    void on_objectNameChanged();
+    void on_objectNameChanged(const QString &);
 
 signals:
     void ageChanged(int);
