@@ -14,7 +14,10 @@ void moc::test1()
 void moc::test2()
 {
     CObject *o=new CObject();
-    QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(const QString &)), o, SLOT(on_objectNameChanged(const QString &)));
+    // 使用 SLOT 宏时要求槽函数必须使用 slots 声明
+//    QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(QString)), o, SLOT(on_objectNameChanged()));
+    // 使用函数指针的方式，可以省略 receiver 中的 slots 声明
+    QMetaObject::Connection conn = QObject::connect(o, &QObject::objectNameChanged, o, &CObject::on_objectNameChanged);
     Q_ASSERT(conn);
     o->setObjectName("name1");
 //    对象的元信息
