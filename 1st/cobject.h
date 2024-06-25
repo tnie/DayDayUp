@@ -12,7 +12,7 @@ public:
     int age() const;
     void setAge(int a);
 
-//public slots:
+public slots:
     void on_objectNameChanged();
 
 signals:

@@ -33,7 +33,8 @@ void CObject::setAge(int a)
 
 void CObject::on_objectNameChanged()
 {
-    // 可以在此处断点调试，观察信号槽的调用堆栈
+    // 可以在此处断点调试，观察信号槽的调用堆栈，观察
+//    元对象系统如何调用 QObject 的特定函数
     setAge(0);
 }
 

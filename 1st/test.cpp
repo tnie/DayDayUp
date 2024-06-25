@@ -13,6 +13,7 @@ void moc::test1()
 
 void moc::test2()
 {
+    Q_INVOKABLE
     CObject *o=new CObject();
     // 使用 SLOT 宏时要求槽函数必须使用 slots 声明
 //    QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(QString)), o, SLOT(on_objectNameChanged()));
@@ -64,6 +65,10 @@ void moc::test2()
     //        成员函数的元信息
             QMetaMethod m1 = m->method(i);
             qDebug() << m1.methodSignature();
+            if(m1.parameterCount() == 0)
+            {
+                m1.invoke(o);
+            }
         }
     }
 
@@ -71,6 +76,9 @@ void moc::test2()
     o->dumpObjectInfo();
 
     o->setAge(11);
+    {
+        QMetaObject::invokeMethod(o, "on_objectNameChanged");
+    }
 }
 
 #include "workerthread.h"
