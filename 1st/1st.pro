@@ -24,3 +24,6 @@ HEADERS += \
     cobject.h \
     test.h \
     workerthread.h
+
+DISTFILES += \
+    README.md
