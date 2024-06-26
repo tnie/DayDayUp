@@ -133,16 +133,6 @@ const QMetaObject *DObject::metaObject() const
 
 所以，如何理解每个线程都有独立的事件循环？或者放弃多线程只用单一线程。
 
-见 `QThread` 类型描述：`run()` 虚函数可以在其子类中重写。
-
-> A `QThread` object manages one thread of control within the program. `QThreads` begin executing in `run()`. By default, `run()` starts the event loop by calling `exec()` and runs a Qt event loop inside the thread.
-
-见 Thread Affinity 特性：
-
-> A `QObject` instance is said to have a thread affinity, or that it lives in a certain thread.
->
-> When a `QObject` receives a `queued signal` or a `posted event`, the slot or event handler will run in the thread that the object lives in.
-
 # 源文件内部类
 
 我们可以在 .cpp 文件中定义只用于当前文件的 C++ 类，但 `QObject` 子类不支持这种做法。
