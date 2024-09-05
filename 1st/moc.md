@@ -39,7 +39,6 @@ public:
     QDynamicMetaObjectData *metaObject;
     QMetaObject *dynamicMetaObject() const;
 };
-
 ```
 
 # 内部实现
@@ -50,11 +49,43 @@ public:
 >
 > The `QMetaMethod` class provides meta-data about a member function.
 
-`struct QMetaObject` 实际只有一个（语法上）公有的成员变量 `d` 但在语义上却是 private data （见 `qobjectdefs.h` 头文件）。为什么如此处理？
+`struct QMetaObject` 实际只有一个（语法上）公有的成员变量 `d` 但在语义上却是 private data 。为什么如此处理？
+
+```cpp
+// 摘自 `qobjectdefs.h` 头文件
+struct { // private data
+    SuperData superdata;
+    const QByteArrayData *stringdata;
+    const uint *data;
+    typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
+    StaticMetacallFunction static_metacall;
+    const SuperData *relatedMetaObjects;
+    void *extradata; //reserved for future use
+} d;
+```
 
 文件 `moc_qobject.cpp` 去哪里查看呢？
 
 <!-- more -->
+
+```cpp
+// 摘自 moc 自动生成的 moc_cobject.cpp 文件
+QT_INIT_METAOBJECT const QMetaObject DObject::staticMetaObject = { {
+    // 以下定义去哪里找？
+    QMetaObject::SuperData::link<CObject::staticMetaObject>(),
+    qt_meta_stringdata_DObject.data,
+    qt_meta_data_DObject,
+    qt_static_metacall,
+    nullptr,
+    nullptr
+} };
+
+const QMetaObject *CObject::metaObject() const
+{
+    // QObject::d_ptr->metaObject 一般是 nullptr
+    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
+}
+```
 
 之后无符号整型指针 `d.data` 又是按照 `QMetaObjectPrivate` 解析的，后者的定义在哪？找到这个约定我们就能理解 moc_xxx.cpp 中 `const uint qt_meta_data_CObject[]` 一堆的数字是什么意思了。
 

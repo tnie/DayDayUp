@@ -20,7 +20,7 @@ tags:
 1. 在软件开发办公室试验，经 TP-LINK 交换机后，飞腾开发机上软件接收数据稳定
 2. 在交付检验办公室试验，经设备上交换机后，软件接收数据失败
 3. 编译、运行软件的 Qt 版本同为 5.13.2，操作系统大致相同。
-同一执行文件从办公室拿到交付空间也会接收失败
+4. 同一执行文件从办公室拿到交付空间也会接收失败
 
 重放 bug0319~88.pcap 报文（第 50/110 条 udp 报文的 checksum 是非法的）
 
@@ -40,7 +40,7 @@ tags:
 ![](https://raw.githubusercontent.com/tnie/MarkdownPhotos/picgo/ebd59081_134031.png)
 
 
-关闭测试环境的 offload 特性 `ethtool -K enaphyt4i0 rx off` 也能够收到包含 invalid checksum 在内的 110 条报文。但是生产环境的 offload 自始至终都是 `on` 启用的，两者对于 invalid checksum 报文的不同表现并不是开关 offload  带来的。
+关闭测试环境的 offload 特性 `ethtool -K enaphyt4i0 rx off` 也能够收到包含 invalid checksum 在内的 110 条报文，通过 `tcpdump -vv` 可以看到 “bad udp cksum” 提示。但是生产环境的 offload 自始至终都是 `on` 启用的，两者对于 invalid checksum 报文的不同表现并不是开关 offload  带来的。
 
 tcpdump 如何过滤 invalid checksum 的报文？
 
@@ -61,7 +61,7 @@ tcpdump 和 wireshark 过滤字节的语法存在差异：
 
 ```
 tcpdump udp[34:2]=0xa841
-udp.payload[26:2] == A841
+udp.payload[26:2] == A841  # wireshark
 tcpdump -i enaphyt4i0  udp[34:2]=0xa841 and dst 224.112.212.11 
 ```
 

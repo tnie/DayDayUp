@@ -16,9 +16,9 @@ void moc::test2()
     Q_INVOKABLE
     CObject *o=new CObject();
     // 使用 SLOT 宏时要求槽函数必须使用 slots 声明
-//    QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(QString)), o, SLOT(on_objectNameChanged()));
+    QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(QString)), o, SLOT(on_objectNameChanged()));
     // 使用函数指针的方式，可以省略 receiver 中的 slots 声明
-    QMetaObject::Connection conn = QObject::connect(o, &QObject::objectNameChanged, o, &CObject::on_objectNameChanged);
+    // QMetaObject::Connection conn = QObject::connect(o, &QObject::objectNameChanged, o, &CObject::on_objectNameChanged);
     Q_ASSERT(conn);
     o->setObjectName("name1");
 //    对象的元信息
@@ -55,6 +55,12 @@ void moc::test2()
             const char *n = m1.name();
             QVariant var = m1.read(o);  /*how?*/
             qDebug() << n << var;
+            if(QLatin1Literal("age") == n)
+            {
+                bool ok = m1.write(o, 99);
+                qDebug() << o->age();
+                Q_ASSERT(ok);
+            }
         }
     }
     if(int c = m->methodCount())
@@ -62,18 +68,21 @@ void moc::test2()
         qDebug() << "\n" << className << "methodCount" << c;
         for(int i=0; i<c; ++i)
         {
-    //        成员函数的元信息
+    //        信号、槽函数等（元对象系统）可调用函数的元信息
             QMetaMethod m1 = m->method(i);
             qDebug() << m1.methodSignature();
-            if(m1.parameterCount() == 0)
+            if(m1.parameterCount() == 0 &&
+                m1.methodSignature() == "on_objectNameChanged()")
             {
+                qDebug() << "—— invoke" ;
                 m1.invoke(o);
             }
         }
     }
 
-    qDebug() << "\n";
+    qDebug() << "======";
     o->dumpObjectInfo();
+    qDebug() << "======";
 
     o->setAge(11);
     {
