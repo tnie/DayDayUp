@@ -9,6 +9,7 @@ class CObject : public QObject
     Q_PROPERTY(int age READ age WRITE setAge NOTIFY ageChanged)
 public:
     explicit CObject(QObject *parent = nullptr);
+    ~CObject();
     int age() const;
     void setAge(int a);
 

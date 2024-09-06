@@ -15,6 +15,11 @@ CObject::CObject(QObject *parent) : QObject(parent)
     this->setProperty("date", "2023年3月21日");
 }
 
+CObject::~CObject()
+{
+    qDebug() << __FUNCTION__;
+}
+
 int CObject::age() const
 {
     return age_;

@@ -14,7 +14,8 @@ void moc::test1()
 void moc::test2()
 {
     Q_INVOKABLE
-    CObject *o=new CObject();
+    QObject *obj = new QObject();
+    CObject *o=new CObject(obj);
     // 使用 SLOT 宏时要求槽函数必须使用 slots 声明
     QMetaObject::Connection conn = QObject::connect(o, SIGNAL(objectNameChanged(QString)), o, SLOT(on_objectNameChanged()));
     // 使用函数指针的方式，可以省略 receiver 中的 slots 声明
@@ -88,6 +89,7 @@ void moc::test2()
     {
         QMetaObject::invokeMethod(o, "on_objectNameChanged");
     }
+    obj->deleteLater();
 }
 
 #include "workerthread.h"
