@@ -11,4 +11,8 @@ namespace thread {
 
 }
 
+namespace socket {
+    void test();
+}
+
 #endif // TEST_H

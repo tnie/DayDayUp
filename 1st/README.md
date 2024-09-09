@@ -30,9 +30,9 @@ int main(int argc, char *argv[])
 
 熟悉 ASIO 框架的同学，会有一个疑问：没有事件的时候，循环就退出了。Qt 怎么处理的？
 
-通过 `QEventLoop::WaitForMoreEvents` 标志位和 `MsgWaitForMultipleObjectsEx()` Win32 API 实现的：
+Windows 平台通过 `QEventLoop::WaitForMoreEvents` 标志位和 `MsgWaitForMultipleObjectsEx()` Win32 API 实现的：推测是 IOCP 或者其前几代技术。
 
-推测是 IOCP 或者其前几代技术。
+Ubuntu 平台通过 GLib 的 `g_main_context_iteration()` 接口实现。
 
 # 断点调试
 
@@ -167,9 +167,21 @@ Qt 第一个版本 Qt1.0 诞生于 1995 年，比 C++ 第一个标准 C++98 还�
 
 // 摘自 QEventDispatcherWin32::processEvents() ，先处理 OS 事件（键鼠输入、网络收发）
     haveMessage = PeekMessage(&msg, 0, 0, 0, PM_REMOVE);
+
+// 在 Ubuntu 平台，摘自 QEventDispatcherGlib::processEvents()
+    bool result = g_main_context_iteration(d->mainContext, canWait);
 ```
 
-去了解 Win32 API 还是转头去看 linux 平台的实现呢？
+在 Ubuntu 上，底层使用 GLib 实现事件循环： 
+
+> [GLib][glib] is the low-level core library that forms the basis for projects such as GTK and GNOME. 
+It provides data structure handling for C, portability wrappers, and interfaces for such runtime functionality as an event loop, threads, dynamic loading, and an object system.
+
+可以查看 Qt 文档中对 `QAbstractEventDispatcher Class` 的介绍，了解 Qt 是如何封装各平台差异的。
+
+备注1：在 Ubuntu 使用 `.run` 在线安装包部署 Qt 5.15.2 后，发现 `qobject.cpp` 调试信息不太一致，断点进不去。如果追求严格的一致性，估计还是需要源码构建才行。
+
+[glib]:https://gitlab.gnome.org/GNOME/glib
 
 # Ubuntu 20.04 LTS (Focal Fossa)
 

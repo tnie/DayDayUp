@@ -98,3 +98,31 @@ void thread::test()
     auto p = new MyObject;
     p->startWorkInAThread();
 }
+
+#include <QUdpSocket>
+#include <QNetworkDatagram>
+#include <QNetworkInterface>
+namespace socket
+{
+void readPendingDatagrams(QUdpSocket* udpSocket)
+{
+    static int idx = 1;
+    while (udpSocket->hasPendingDatagrams()) {
+        QNetworkDatagram datagram = udpSocket->receiveDatagram();
+        qDebug() << datagram.senderAddress() << idx;
+        idx ++;
+    }
+}
+}
+
+void socket::test()
+{
+    auto s = new QUdpSocket;
+    s->bind(QHostAddress("168.70.0.13"), 21778);
+    // qDebug() << QNetworkInterface::allInterfaces();
+    s->joinMulticastGroup(QHostAddress("224.112.212.11"), QNetworkInterface::interfaceFromName("ethernet_32773"));
+    QObject::connect(s, &QUdpSocket::readyRead, [s](){
+        readPendingDatagrams(s);
+    });
+    // s->deleteLater();
+}
