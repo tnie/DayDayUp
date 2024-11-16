@@ -42,6 +42,38 @@ widget 页面默认隐藏不释放内存的优点？为什么不及时释放内�
 
 怎么打包发布项目呢？
 
+# 命令行构建
+
+在 proj/src 目录下包含 untitled.pro 等项目源代码，
+采用 shadow 方式编译中间编译产物避免污染源码所在目录
+
+```shell
+# 假设当前工作目录是 *.pro Qt 工程文件所在目录
+cd ../ && make release debug
+cd release && qmake ../src/untitled.pro
+# 调试版本
+cd ../debug && qmake ../src/untitled.pro CONFIG+=debug
+make -j8
+# 验证编译结果。在远程终端中一般无法启动窗口程序
+```
+
+关于 Debug 模式等更多 qmake 操作，请学习 Qt 帮助手册。
+
+# 窗口
+
+A widget that is not embedded in a parent widget is called a window. 
+(Usually, windows have a frame and a title bar, although it is also possible to create windows without such decoration using suitable window flags). 
+In Qt, `QMainWindow` and the various subclasses of `QDialog` are the most common window types.
+
+# 定时器
+
+On UNIX (including Linux, macOS, and iOS), Qt will keep millisecond accuracy for `Qt::PreciseTimer`. 
+For `Qt::CoarseTimer`, the interval will be adjusted up to 5% to align the timer with other timers that are expected to fire at or around the same time. 
+The objective is to make most timers wake up at the same time, thereby reducing CPU wakeups and power consumption.
+
+On Windows, Qt will use Windows's Multimedia timer facility (if available) for `Qt::PreciseTimer` and 
+normal Windows timers for `Qt::CoarseTimer` and `Qt::VeryCoarseTimer`.
+
 # 事件驱动
 
 QT 的事件驱动，和 libevent/ asio 等库在性能、易用性、可靠性上是否存在大的差别？ 是不是大同小异，只需要关注接口使用上的差别即可？
