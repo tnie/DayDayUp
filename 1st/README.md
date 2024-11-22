@@ -195,9 +195,9 @@ It provides data structure handling for C, portability wrappers, and interfaces 
 
 以下是不同的版本：联网安装时会自动更新 Linux 内核！！
 
-- ubuntu-20.04  
+- ubuntu-20.04  ，发布于 2020-04-23， 在 2025-04 支持结束
 - ubuntu-20.04.1 ，Linux version 5.4.0  [Ubuntu 旧版本][1]
-- ubuntu-20.04.1 ，Linux version 5.8
+- ubuntu-20.04.2 ，Linux version 5.8
 - ubuntu-20.04.6 ，Linux version 5.15.0
 
 思考：公司产品都是采用 Arm 架构的飞腾主板，我只有 x86 的电脑。底层架构都不一致，争取 Linux kernel 一致性有没有必要？
