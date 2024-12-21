@@ -187,13 +187,13 @@ It provides data structure handling for C, portability wrappers, and interfaces 
 
 为什么选择这个版本的系统来学习？
 
-公司业务线目前采用的 Kylin V10 桌面版。无论是含掉电保护模式的海军版，还是“物美价廉”的国防版，大厦基石都一致：
+公司业务线目前采用的 Kylin V10 桌面版。无论是含掉电保护模式的 HJ 版，还是“物美价廉”的 GF 版，大厦基石都一致：
 
 > Linux version 5.4.18 ， gcc version 9.3.0
 
 推断两者都是基于 Ubuntu 20.04 LTS ，改用 UKUI 桌面环境的换皮版。 [所见略同][2]。 
 
-以下是不同的版本：联网安装时会自动更新 Linux 内核！！
+以下是不同的版本：联网安装时会自动更新 Linux 内核！！ 查看内核版本 `uname -a`
 
 - ubuntu-20.04  ，发布于 2020-04-23， 在 2025-04 支持结束
 - ubuntu-20.04.1 ，Linux version 5.4.0  [Ubuntu 旧版本][1]

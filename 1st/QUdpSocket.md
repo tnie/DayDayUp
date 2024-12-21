@@ -17,14 +17,16 @@ tags:
 
 <!-- more -->
 
-1. 在软件开发办公室试验，经 TP-LINK 交换机后，飞腾开发机上软件接收数据稳定
+1. 在软件开发办公室试验，点对点直连或者经 TP-LINK 交换机后，飞腾开发机上软件接收数据稳定
 2. 在交付检验办公室试验，经设备上交换机后，软件接收数据失败
 3. 编译、运行软件的 Qt 版本同为 5.13.2，操作系统大致相同。
 4. 同一执行文件从办公室拿到交付空间也会接收失败
 
 重放 bug0319~88.pcap 报文（第 50/110 条 udp 报文的 checksum 是非法的）
 
-在生产环境下，incorrect checksum 的报文会造成 `readyRead` 信号失效：在前 49 条报文正常接收后，不再有 `readyRead` 信号。改用定时器是能够正常接收 109/110 条报文的（非法报文会被 TCP/IP 协议栈过滤掉）
+在生产环境下，incorrect checksum 的报文会造成 `readyRead` 信号失效：在前 49 条报文正常接收后，不再有 `readyRead` 信号。
+
+改用定时器是能够正常接收 109/110 条报文的（非法报文会被 TCP/IP 协议栈过滤掉）
 
 ```cpp
 //    connect(socket, SIGNAL(readyRead()), this, SLOT(on_readData()));
@@ -40,7 +42,7 @@ tags:
 ![](https://raw.githubusercontent.com/tnie/MarkdownPhotos/picgo/ebd59081_134031.png)
 
 
-关闭测试环境的 offload 特性 `ethtool -K enaphyt4i0 rx off` 也能够收到包含 invalid checksum 在内的 110 条报文，通过 `tcpdump -vv` 可以看到 “bad udp cksum” 提示。但是生产环境的 offload 自始至终都是 `on` 启用的，两者对于 invalid checksum 报文的不同表现并不是开关 offload  带来的。
+关闭测试环境的 offload 特性 `ethtool -K enaphyt4i0 rx off` 也能够收到包含 invalid checksum 在内的 110 条报文，通过 `tcpdump -vv` 可以看到 “bad udp cksum” 提示（收到 110/110 条报文），QUdpSocket 收到 109/100。但是生产环境的 offload 自始至终都是 `on` 启用的，两者对于 invalid checksum 报文的不同表现并不是开关 offload  带来的。
 
 tcpdump 如何过滤 invalid checksum 的报文？
 
@@ -74,32 +76,3 @@ tcpdump -i enaphyt4i0  udp[34:2]=0xa841 and dst 224.112.212.11
 [How to disable checksums on ethernet card in Windows 10?](https://superuser.com/questions/961617/how-to-disable-checksums-on-ethernet-card-in-windows-10)
 
 > 网卡属性 - 配置 - 高级 - UDP 校验和分载传输（IPv4）
-
-
-# 数据报 `QNetworkDatagram` 接口有坑
-
-```cpp
-QNetworkDatagram datagram(getPayload(), destinationAddress, destinationPort);
-if(QString("不要使用以下接口").isEmpty())
-{
-    const QHostAddress address("192.168.50.221");
-    // setSender() 参数和 bind() 绑定的地址及端口必须一致，否则 writeDatagram(const QNetworkDatagram &) 执行失败
-    // 建议不要调用 setSender() 此接口：此接口冗余，且容易错用。
-    // writeDatagram(const QNetworkDatagram &) 之前的 bind() 操作不会使用 setSender() 的参数
-    datagram.setSender(address);
-    // 在 Windows 平台下，不能调用 setHopLimit()，因为底层配置 IP_TTL 是非法项造成 writeDatagram(const QNetworkDatagram &) 执行失败
-    // https://learn.microsoft.com/en-us/windows/win32/winsock/windows-sockets-error-codes-2
-    //  Return code/value: WSAEINVAL
-    // https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsasendmsg
-    //  Error code: WSAEINVAL
-    // https://learn.microsoft.com/en-us/windows/win32/winsock/ipproto-ip-socket-options
-    //  Options: IP_TTL
-    // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-getsockopt
-    //  Return value: WSAEFAULT
-    datagram.setHopLimit(7);
-    // setInterfaceIndex() 和 bind() 冲突似乎没有不良影响。
-    // 但如果不是 QNetworkInterface::allInterfaces() 集合内的索引，就会发送失败
-    datagram.setInterfaceIndex(119);
-    qDebug() << "interfaceIndex is" << datagram.interfaceIndex();
-}
-```
