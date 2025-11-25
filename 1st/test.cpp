@@ -71,7 +71,7 @@ void moc::test2()
         {
     //        信号、槽函数等（元对象系统）可调用函数的元信息
             QMetaMethod m1 = m->method(i);
-            qDebug() << m1.methodSignature();
+            qDebug() << m1.methodSignature() << m->normalizedSignature(m1.methodSignature());
             if(m1.parameterCount() == 0 &&
                 m1.methodSignature() == "on_objectNameChanged()")
             {

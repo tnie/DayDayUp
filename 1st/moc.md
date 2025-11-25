@@ -1,5 +1,5 @@
 ---
-title: Qt moc
+title: Qt 元对象系统
 categories: 
 - cpp
 - qt
@@ -7,9 +7,34 @@ date: 2023-03-17 14:37:04
 tags: qt moc
 ---
 
+学习 Qt 源码，避不开断点调试和 pdb 文件。有三种思路：
+
+- 使用 Qt 4.8.7，安装包中源码和 pdb 文件都有，版本太旧；
+- 使用 Qt5.12.x，有离线安装包，但
+  
+  - 缺失 pdb 调试文件，单独下载 pdb 文件后与源码版本不一致，断点位置偏移；
+  - 缺少 `moc_qobject.cpp` 等构建过程中生成的中间文件，影响理解；
+
+- 使用 Qt5.15.x 等任意版本，从源码构建，难度大，收益也大。
+
+摸索之后，选择了从源码构建 qtbase 基础模块，用于学习核心特性足够。稍后出一键构建脚本。
+
+先避开图形界面程序 Qt Application，通过 Qt Console Application 学习，只使用 Core 模块。
+
+学习目标：
+
+- 元对象系统，搞定 `moc_qobject.cpp`  就差不多学会了
+- 事件循环，核心实现都在 `QThreadData` 类中
+- 信号槽，= 元对象系统中的函数调用能力
+- Qt 跨模块（dll/exe） 内存分配
+
+思考：元对象系统在完成信号槽之外，还实现了哪些特性？
+
+# 分离接口和实现
+
 `QObject` 的 `d_ptr` 指针，指向 `QObjectPrivate` ； `QWidget` 的 `d_ptr` 指针，指向 `QWidgetPrivate` 。 
 
-Qt 内部实现上使用了宏，本质上是 pImpl 手法。
+Qt 内部实现上使用了宏，本质上是 pImpl 手法，分离接口和具体实现。
 
 指针类型是抽象类 `QObjectData` ，它是所有 QXxxPrivate 类型的基类。
 
@@ -41,7 +66,7 @@ public:
 };
 ```
 
-# 内部实现
+# 元对象类型
 
 要理解 `QObject` ，先看 `QMetaObject`
 
@@ -49,7 +74,7 @@ public:
 >
 > The `QMetaMethod` class provides meta-data about a member function.
 
-`struct QMetaObject` 实际只有一个（语法上）公有的成员变量 `d` 但在语义上却是 private data 。为什么如此处理？
+`struct QMetaObject` 有很多方法，实际只有一个（语法上）公有的成员变量 `d` 但在语义上却是 private data 。为什么如此处理？
 
 ```cpp
 // 摘自 `qobjectdefs.h` 头文件
@@ -64,30 +89,40 @@ struct { // private data
 } d;
 ```
 
-文件 `moc_qobject.cpp` 去哪里查看呢？
+文件 `moc_qobject.cpp` 去哪里查看呢？ 构建过程生成的中间文件。
 
 <!-- more -->
 
 ```cpp
-// 摘自 moc 自动生成的 moc_cobject.cpp 文件
-QT_INIT_METAOBJECT const QMetaObject DObject::staticMetaObject = { {
-    // 以下定义去哪里找？
-    QMetaObject::SuperData::link<CObject::staticMetaObject>(),
-    qt_meta_stringdata_DObject.data,
-    qt_meta_data_DObject,
-    qt_static_metacall,
+// 摘自 moc_qobject.cpp Qt5.15.18 ，类型的静态成员变量
+QT_INIT_METAOBJECT const QMetaObject QObject::staticMetaObject = { {
+    nullptr,
+    qt_meta_stringdata_QObject.data,
+    qt_meta_data_QObject,
+    qt_static_metacall,     // 函数调用的中转站
     nullptr,
     nullptr
 } };
 
-const QMetaObject *CObject::metaObject() const
+const QMetaObject *QObject::metaObject() const
 {
     // QObject::d_ptr->metaObject 一般是 nullptr
     return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
 }
+
+// SIGNAL 2
+void QObject::objectNameChanged(const QString & _t1, QPrivateSignal _t2)
+{
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t1))), 
+                            const_cast<void*>(reinterpret_cast<const void*>(std::addressof(_t2))) };
+    // 魔术数字 2 是 qt_meta_data_QObject[] 中函数索引值
+    QMetaObject::activate(this, &staticMetaObject, 2, _a);
+}
 ```
 
-之后无符号整型指针 `d.data` 又是按照 `QMetaObjectPrivate` 解析的，后者的定义在哪？找到这个约定我们就能理解 moc_xxx.cpp 中 `const uint qt_meta_data_CObject[]` 一堆的数字是什么意思了。
+之后无符号整型指针 `d.data` (即 `qt_meta_data_QObject[]`) 又是按照 `QMetaObjectPrivate` 解析的，后者的定义在哪？
+
+找到这个约定我们就能理解 `moc_qobject.cpp` 中 `const uint qt_meta_data_CObject[]` 一堆的数字是什么意思了。
 
 ```cpp
 // 5.12.12\Src\qtbase\src\corelib\kernel\qmetaobject_p.h
@@ -117,29 +152,11 @@ struct QMetaObjectPrivate
 > 
 > Returns the number of methods in this class, including the number of methods provided by each base class. These include signals and slots as well as **normal** member functions.
 
-帮助手册针对 `Q_INVOKABLE` 的解释，很明显 invokableMethod() 和 normalMethod() 是不同的！前者表示：
+帮助手册针对 `Q_INVOKABLE` 的解释，很明显 `invokableMethod()` 和 `normalMethod()` 是不同的！前者表示：
 
 > Apply this macro to declarations of member functions to allow them to be invoked via the meta-object system.
 
 在尝试追踪 `connect` 如何工作之前，我们先看一下怎么使用 `QMetaObject` 执行 `QObject` 中的函数？
-
-```cpp
-// 子类的对象元信息定义父类对象元信息时直接使用后者的 staticMetaObject
-QT_INIT_METAOBJECT const QMetaObject DObject::staticMetaObject = { {
-    &CObject::staticMetaObject,
-    qt_meta_stringdata_DObject.data,
-    qt_meta_data_DObject,
-    qt_static_metacall,
-    nullptr,
-    nullptr
-} };
-
-// 获取对象元信息时的分支是什么情况？ d 指针是什么？
-const QMetaObject *DObject::metaObject() const
-{
-    return QObject::d_ptr->metaObject ? QObject::d_ptr->dynamicMetaObject() : &staticMetaObject;
-}
-```
 
 # 通过元对象执行函数
 

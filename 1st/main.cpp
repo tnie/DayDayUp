@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     QEvent e(QEvent::User);
 //    a.sendEvent(&a, &e);
-    a.postEvent(&a, new QEvent(QEvent::User));
-    // moc::test2();
+    // a.postEvent(&a, new QEvent(QEvent::User));
+    moc::test2();
 //    thread::test();
-    socket::test();
+    // socket::test();
     return a.exec();
 }
