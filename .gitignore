@@ -76,3 +76,4 @@ build-*_Qt_*-Release
 build
 /1st/*.TMP
 /*.TMP
+/1st/.obsidian
